@@ -1,0 +1,26 @@
+---
+title: "DS project"
+author: "Ayushi, Kashvi, Caedmon, Nicole"
+date: "10/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(lubridate)     
+library(ggthemes)      
+library(geofacet)     
+library(maps)          # for map data
+library(ggmap)         # for mapping points on maps
+library(gplots)        # for col2hex() function
+library(RColorBrewer)  # for color palettes
+library(sf)            # for working with spatial data
+library(leaflet)       # for highly customizabl
+theme_set(theme_minimal())
+```
+

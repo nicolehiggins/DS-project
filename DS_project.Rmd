@@ -20,7 +20,60 @@ library(ggmap)         # for mapping points on maps
 library(gplots)        # for col2hex() function
 library(RColorBrewer)  # for color palettes
 library(sf)            # for working with spatial data
-library(leaflet)       # for highly customizabl
+library(leaflet)       # for highly customizable
+library(googlesheets4)
 theme_set(theme_minimal())
+gs4_deauth()
+```
+
+Preliminary data cleanup
+```{r, eval=FALSE}
+read_sheet("https://docs.google.com/spreadsheets/d/1H1I0LnP-OoAUwC9V2i1MLn3_iwFIDfzUUh0AWvA5YPQ/edit#gid=1756225127") -> AQI_2000
+
+AQI_2000 %>%
+  group_by(`State Name`) %>%
+  summarise(mean(AQI)) -> mean_AQI_2000
+
+write.csv(mean_AQI_2000, "mean_AQI_2000.csv")
+
+read_sheet("https://docs.google.com/spreadsheets/d/1aGLKZpmPvUPGZ4IoTcV6mBMNkLJNYw1g8dEH_L4gu1U/edit#gid=801194266") -> AQI_2020
+
+AQI_2020 %>%
+  group_by(`State Name`) %>%
+  summarise(mean(AQI)) -> mean_AQI_2020
+
+write.csv(mean_AQI_2020, "mean_AQI_2020.csv")
+```
+```{r}
+mean_AQI_2000 <- read_csv("mean_AQI_2000.csv", 
+    col_types = cols(X1 = col_skip())) %>%
+    rename(mean_2000 = `mean(AQI)`)
+
+mean_AQI_2020 <- read_csv("mean_AQI_2020.csv", 
+    col_types = cols(X1 = col_skip())) %>%
+    rename(mean_2020 = `mean(AQI)`)
+
+mean_AQI_2020 %>%
+  left_join(mean_AQI_2000,
+            by = "State Name") %>%
+  mutate(dif = mean_2020 - mean_2000,
+         `State Name` = str_to_lower(`State Name`)) -> AQI_dif
+
+AQI_dif
+```
+
+```{r}
+states_map <- map_data("state")
+states_map
+AQI_dif %>%
+  ggplot() +
+  geom_map(map = states_map,
+           aes(map_id = `State Name`,
+               fill = dif)) +
+  expand_limits(x = states_map$long, y = states_map$lat) +
+  theme_map() +
+  theme(legend.position = "right",
+        plot.background = element_rect(fill = "#b6d4c8")) +
+  labs(title = "20 Year Difference", fill = "Difference")
 ```
 
